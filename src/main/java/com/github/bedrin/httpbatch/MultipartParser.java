@@ -1,12 +1,14 @@
 package com.github.bedrin.httpbatch;
 
 import com.github.bedrin.httpbatch.io.BoundedInputStream;
+import com.github.bedrin.httpbatch.io.HeaderParser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Arrays;
+import java.util.Map;
 
 public class MultipartParser {
 
@@ -48,6 +50,10 @@ public class MultipartParser {
         do {
             BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
             System.out.print("<PART>");
+            final HeaderParser headerParser = new HeaderParser(false);
+            for (Map.Entry<String, String> entry : headerParser.parseHeader(bis).entrySet()) {
+                System.out.println("Header: " + entry.getKey() + ": " + entry.getValue());
+            }
             if (printInputStream(bis).length == 0) break;
             System.out.println("</PART>");
         } while (true);
