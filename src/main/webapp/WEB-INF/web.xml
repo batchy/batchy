@@ -18,17 +18,14 @@
         <url-pattern>/testServlet/*</url-pattern>
     </servlet-mapping>
 
-    <filter>
-        <filter-name>multiplexer</filter-name>
-        <filter-class>com.github.bedrin.batchy.MultiplexerFilter</filter-class>
-    </filter>
+    <servlet>
+        <servlet-name>multiplexer</servlet-name>
+        <servlet-class>com.github.bedrin.batchy.MultiplexerServlet</servlet-class>
+    </servlet>
 
-    <filter-mapping>
-        <filter-name>multiplexer</filter-name>
-        <url-pattern>/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-        <dispatcher>INCLUDE</dispatcher>
-    </filter-mapping>
+    <servlet-mapping>
+        <servlet-name>multiplexer</servlet-name>
+        <url-pattern>/multiplexer</url-pattern>
+    </servlet-mapping>
 
 </web-app>

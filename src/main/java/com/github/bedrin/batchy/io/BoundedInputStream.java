@@ -41,6 +41,7 @@ public class BoundedInputStream extends InputStream {
         if (empty) return -1;
 
         if (pos < size) {
+            // buffer is not empty - server content from it
             return buf[pos++];
         } else {
 
@@ -69,7 +70,7 @@ public class BoundedInputStream extends InputStream {
                         i = '\r';
                     }
                 }
-            } else {
+            } else if (prefix == Prefix.NONE) {
                 pis.unread(i);
             }
 
