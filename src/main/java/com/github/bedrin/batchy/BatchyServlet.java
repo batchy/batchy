@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.*;
 
-public class MultiplexerServlet extends HttpServlet {
+public class BatchyServlet extends HttpServlet {
 
     final ExecutorService executorService = Executors.newCachedThreadPool();
 

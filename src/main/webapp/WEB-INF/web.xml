@@ -19,13 +19,13 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>multiplexer</servlet-name>
-        <servlet-class>com.github.bedrin.batchy.MultiplexerServlet</servlet-class>
+        <servlet-name>batchy</servlet-name>
+        <servlet-class>com.github.bedrin.batchy.BatchyServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>multiplexer</servlet-name>
-        <url-pattern>/multiplexer</url-pattern>
+        <servlet-name>batchy</servlet-name>
+        <url-pattern>/batchy</url-pattern>
     </servlet-mapping>
 
 </web-app>
