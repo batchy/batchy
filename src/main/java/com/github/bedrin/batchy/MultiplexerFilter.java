@@ -34,14 +34,14 @@ public class MultiplexerFilter implements Filter {
                 final String contentEncoding = httpServletRequest.getCharacterEncoding();
 
                 try {
-                    final PartServletRequest partServletRequest = new PartServletRequest(httpServletRequest);
-                    partServletRequest.setMethod("GET");
-                    partServletRequest.setContentType(null);
 
                     final Future<?> getFuture = executorService.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {
+                                final PartServletRequest partServletRequest = new PartServletRequest(httpServletRequest);
+                                partServletRequest.setMethod("GET");
+                                partServletRequest.setContentType(null);
                                 request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -49,13 +49,13 @@ public class MultiplexerFilter implements Filter {
                         }
                     });
 
-                    partServletRequest.setMethod("POST");
-                    partServletRequest.setContentType("application/javascript");
-
                     final Future<?> postFuture = executorService.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {
+                                final PartServletRequest partServletRequest = new PartServletRequest(httpServletRequest);
+                                partServletRequest.setMethod("POST");
+                                partServletRequest.setContentType("application/javascript");
                                 request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
                             } catch (Exception e) {
                                 e.printStackTrace();
