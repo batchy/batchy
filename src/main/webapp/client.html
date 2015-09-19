@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multiplexer Example</title>
+    <script type="application/javascript">
+        function sendMultipart() {
+            xhr = new XMLHttpRequest();
+            xhr.open('POST', 'multipart', false);
+            xhr.setRequestHeader('Content-Type', 'multipart/mixed; boundary=foo');
+            xhr.send('--foo\r\nContent-Length: 5\r\n\r\n12345\r\n--foo--');
+        }
+    </script>
+</head>
+<body>
+    <h1>Hello World!</h1>
+    <button onclick="sendMultipart();">Execute Multipart Request</button>
+</body>
+</html>
