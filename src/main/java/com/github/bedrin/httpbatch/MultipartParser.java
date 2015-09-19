@@ -49,10 +49,11 @@ public class MultipartParser {
         do {
             if (wasLastPart(pis)) break;
             BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-            final Map<String, String> messageHeaders = headerParser.parseHeader(bis);
-            final Map<String, String> httpHeaders = headerParser.parseHeader(bis);
-            dump(httpHeaders);
-            printInputStream(bis);
+            Map<String, String> messageHeaders = headerParser.parseHeader(bis);
+            String requestLine = headerParser.readFirstNotEmptyLine(bis);
+            Map<String, String> httpHeaders = headerParser.parseHeader(bis);
+            //dump(httpHeaders);
+            //printInputStream(bis);
         } while (true);
 
         // epilogue

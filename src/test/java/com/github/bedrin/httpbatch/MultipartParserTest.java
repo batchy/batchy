@@ -30,7 +30,7 @@ public class MultipartParserTest {
                 "{\r\n" +
                 "  \"animalName\": \"sheep\",\r\n" +
                 "  \"animalAge\": \"5\"\r\n" +
-                "  \"peltColor\": \"green\",\r\n" +
+                "  \"peltColor\": \"green\"\r\n" +
                 "}\r\n" +
                 "\r\n" +
                 "--batch_foobarbaz\r\n" +

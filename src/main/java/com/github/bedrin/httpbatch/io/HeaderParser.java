@@ -15,7 +15,36 @@ public class HeaderParser {
         this.strictCRLF = strictCRLF;
     }
 
-    // TODO support folder headers and other specil cases from RFC822 (section 3 - Lexical)
+    public String readFirstNotEmptyLine(InputStream in) throws IOException {
+        PushbackInputStream pis = new PushbackInputStream(in);
+        int i;
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while ((i = pis.read()) != -1) {
+
+            boolean lineEnd = false;
+
+            if ('\r' == i) {
+                lineEnd = !strictCRLF;
+                if ((i = pis.read()) != '\n') pis.unread(i);
+                else if (strictCRLF) lineEnd = true;
+            } else if ('\n' == i) {
+                lineEnd = !strictCRLF;
+            }
+
+            if (lineEnd) {
+                break;
+            } else {
+                stringBuilder.appendCodePoint(i);
+            }
+
+        }
+
+        return stringBuilder.toString();
+    }
+
+    // TODO support folder headers and other special cases from RFC822 (section 3 - Lexical)
     public Map<String, String> parseHeader(InputStream in) throws IOException {
 
         final Map<String, String> headers = new LinkedHashMap<>();
