@@ -1,5 +1,6 @@
 package com.github.bedrin.batchy;
 
+import com.github.bedrin.batchy.mux.Multiplexer;
 import com.github.bedrin.batchy.wrapper.PartServletRequest;
 
 import javax.servlet.*;
@@ -14,7 +15,8 @@ public class BatchyServlet extends HttpServlet {
     final ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Override
-    public void service(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+    public void service(final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException, ServletException {
 
         String method = request.getMethod();
 
@@ -30,7 +32,10 @@ public class BatchyServlet extends HttpServlet {
             return;
         }
 
-        String boundary = contentType.substring("multipart/mixed; boundary=".length());
+        Multiplexer multiplexer = new Multiplexer(request, response);
+        multiplexer.service();
+
+        /*String boundary = contentType.substring("multipart/mixed; boundary=".length());
         String contentEncoding = request.getCharacterEncoding();
 
         try {
@@ -69,7 +74,7 @@ public class BatchyServlet extends HttpServlet {
             throw new ServletException(e);
         } catch (ExecutionException e) {
             throw new ServletException(e);
-        }
+        }*/
 
     }
 

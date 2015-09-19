@@ -1,0 +1,14 @@
+package com.github.bedrin.batchy.io;
+
+import java.io.InputStream;
+import java.util.Map;
+
+public interface HttpRequestProcessor {
+
+    void processHttpRequest(
+            Map<String, String> messageHeaders,
+            String requestLine,
+            Map<String, String> httpHeaders,
+            InputStream inputStream);
+
+}

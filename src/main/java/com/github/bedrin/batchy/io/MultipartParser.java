@@ -8,9 +8,11 @@ import java.util.Map;
 public class MultipartParser {
 
     private final String boundary;
+    private final HttpRequestProcessor httpRequestProcessor;
 
-    public MultipartParser(String boundary) {
+    public MultipartParser(String boundary, HttpRequestProcessor httpRequestProcessor) {
         this.boundary = "--" + boundary;
+        this.httpRequestProcessor = httpRequestProcessor;
     }
 
     public void parseMultipartRequest(InputStream inputStream) throws IOException {
@@ -32,6 +34,8 @@ public class MultipartParser {
             Map<String, String> messageHeaders = headerParser.parseHeader(bis);
             String requestLine = headerParser.readFirstNotEmptyLine(bis);
             Map<String, String> httpHeaders = headerParser.parseHeader(bis);
+            httpRequestProcessor.processHttpRequest(messageHeaders, requestLine, httpHeaders, bis);
+            drainInputStream(bis); // todo do we need this precaution?
         } while (true);
 
         // epilogue
