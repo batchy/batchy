@@ -64,27 +64,44 @@ public class MultipartParser {
             }
             case PART_BODY: {
                 // TODO: fail back to PartInputStream in case of large input
-                int i;
-                switch (i = pis.read()) {
-                    case -1  :
+                while (state == PART_BODY) {
+                    int i = pis.read();
+
+                    if (-1 == i) {
                         System.out.println("Part Body: " + data.toString());
+                        data.reset();
                         state = CLOSED;
-                        break;
-                    case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
-                    case '\n':
-                        if (buff.size() == boundary.length() && Arrays.equals(buff.toByteArray(),boundary.getBytes())) {
-                            System.out.println("Part Body: " + data.toString());
-                            state = PART;
+                    } else {
+                        ByteArrayOutputStream eol = new ByteArrayOutputStream();
+                        if (i == '\r') {
+                            eol.write(i);
+                            if ((i = pis.read()) != '\n') pis.unread(i);
                         }
-                        else {
-                            buff.writeTo(data);
+                        if (i == '\n') {
+                            eol.write(i);
                         }
-                        buff.reset();
-                        break;
-                    default:
-                        buff.write(i);
+
+                        if (eol.size() > 0) {
+
+                            if (buff.size() == boundary.length() && Arrays.equals(buff.toByteArray(),boundary.getBytes())) {
+                                System.out.println("Part Body: " + data.toString());
+                                data.reset();
+                                state = PART;
+                            }
+                            else {
+                                buff.writeTo(data);
+                                eol.writeTo(data);
+                            }
+
+                            buff.reset();
+                            eol.reset();
+
+                        } else {
+                            buff.write(i);
+                        }
+                    }
+
                 }
-                break;
             }
         }
     }
