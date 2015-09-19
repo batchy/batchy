@@ -47,7 +47,7 @@ public class HeaderParser {
     // TODO support folder headers and other special cases from RFC822 (section 3 - Lexical)
     public Map<String, String> parseHeader(InputStream in) throws IOException {
 
-        final Map<String, String> headers = new LinkedHashMap<>();
+        final Map<String, String> headers = new LinkedHashMap<String, String>();
 
         PushbackInputStream pis = new PushbackInputStream(in);
         int i;

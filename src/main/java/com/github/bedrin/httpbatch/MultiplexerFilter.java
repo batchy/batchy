@@ -6,8 +6,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 public class MultiplexerFilter implements Filter {
 
@@ -16,8 +15,10 @@ public class MultiplexerFilter implements Filter {
 
     }
 
+    final ExecutorService executorService = Executors.newCachedThreadPool();
+
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(final ServletRequest request, final ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
         if (!(request instanceof HttpServletRequest && response instanceof HttpServletResponse)) {
             chain.doFilter(request, response);
@@ -37,25 +38,36 @@ public class MultiplexerFilter implements Filter {
                     partServletRequest.setMethod("GET");
                     partServletRequest.setContentType(null);
 
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    final Future<?> getFuture = executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }).get();
+                    });
 
                     partServletRequest.setMethod("POST");
                     partServletRequest.setContentType("application/javascript");
 
-                    CompletableFuture.runAsync(() -> {
-                        try {
-                            request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                    final Future<?> postFuture = executorService.submit(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }).get();
-                } catch (InterruptedException | ExecutionException e) {
+                    });
+
+                    getFuture.get();
+                    postFuture.get();
+                } catch (InterruptedException e) {
+                    throw new ServletException(e);
+                } catch (ExecutionException e) {
                     throw new ServletException(e);
                 }
 
