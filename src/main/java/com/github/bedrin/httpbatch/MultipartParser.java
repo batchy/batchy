@@ -1,10 +1,12 @@
 package com.github.bedrin.httpbatch;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.Arrays;
 
-public class HttpRequestParser {
+public class MultipartParser {
 
     private static final int PRE = 0;
     private static final int PART = 1;
@@ -13,7 +15,7 @@ public class HttpRequestParser {
 
     private final String boundary;
 
-    public HttpRequestParser(String boundary) {
+    public MultipartParser(String boundary) {
         this.boundary = "--" + boundary;
     }
 
@@ -23,7 +25,8 @@ public class HttpRequestParser {
 
         int state = PRE;
 
-        StringBuilder sb = new StringBuilder();
+        ByteArrayOutputStream buff = new ByteArrayOutputStream();
+        ByteArrayOutputStream data = new ByteArrayOutputStream();
 
         while (state != CLOSED) switch (state) {
             case PRE: {
@@ -33,45 +36,53 @@ public class HttpRequestParser {
                     case -1: state = CLOSED; break;
                     case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
                     case '\n': {
-                        if (sb.toString().equals(boundary)) state = PART;
-                        else System.out.println("Pre: " + sb.toString());
-                        sb = new StringBuilder();
+                        if (buff.size() == boundary.length() && Arrays.equals(buff.toByteArray(),boundary.getBytes())) state = PART;
+                        else if (buff.size() > 0) System.out.println("Pre: " + buff.toString());
+                        buff.reset();
                         break;
                     }
                     default:
-                        sb.appendCodePoint(i);
+                        buff.write(i);
                 }
                 break;
             }
             case PART: {
                 int i;
                 switch (i = pis.read()) {
-                    case -1: state = CLOSED; break;
+                    case -1  : state = CLOSED; break;
                     case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
                     case '\n': {
-                        if (sb.toString().trim().isEmpty()) state = PART_BODY;
-                        System.out.println("Part Header: " + sb.toString());
-                        sb = new StringBuilder();
+                        if (0 == buff.size()) state = PART_BODY;
+                        else System.out.println("Part Header: " + buff.toString());
+                        buff.reset();
                         break;
                     }
                     default:
-                        sb.appendCodePoint(i);
+                        buff.write(i);
                 }
                 break;
             }
             case PART_BODY: {
+                // TODO: fail back to PartInputStream in case of large input
                 int i;
                 switch (i = pis.read()) {
-                    case -1: state = CLOSED; break;
-                    case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
-                    case '\n': {
-                        if (sb.toString().equals(boundary)) state = PART;
-                        else System.out.println("Part Body: " + sb.toString());
-                        sb = new StringBuilder();
+                    case -1  :
+                        System.out.println("Part Body: " + data.toString());
+                        state = CLOSED;
                         break;
-                    }
+                    case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
+                    case '\n':
+                        if (buff.size() == boundary.length() && Arrays.equals(buff.toByteArray(),boundary.getBytes())) {
+                            System.out.println("Part Body: " + data.toString());
+                            state = PART;
+                        }
+                        else {
+                            buff.writeTo(data);
+                        }
+                        buff.reset();
+                        break;
                     default:
-                        sb.appendCodePoint(i);
+                        buff.write(i);
                 }
                 break;
             }

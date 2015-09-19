@@ -4,12 +4,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
-import static org.junit.Assert.*;
-
 /**
  * Created by bedrin on 19.09.2015.
  */
-public class HttpRequestParserTest {
+public class MultipartParserTest {
 
     @Test
     public void testParseMultipartRequest() throws Exception {
@@ -50,7 +48,7 @@ public class HttpRequestParserTest {
                 "\n" +
                 "--batch_foobarbaz--";
 
-        HttpRequestParser hrp = new HttpRequestParser("batch_foobarbaz");
+        MultipartParser hrp = new MultipartParser("batch_foobarbaz");
         hrp.parseMultipartRequest(new ByteArrayInputStream(raw.getBytes()));
     }
 
