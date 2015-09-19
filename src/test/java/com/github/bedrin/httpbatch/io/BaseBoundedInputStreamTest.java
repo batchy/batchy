@@ -12,6 +12,7 @@ public abstract class BaseBoundedInputStreamTest {
     protected static final String SAMPLE2_CR_DELIMETER = "foo\rbar\nbaz\r--bound\r\n42";
     protected static final String SAMPLE3_LF_DELIMETER = "foo\nbar\rbaz\n--bound\r\n42";
     protected static final String SAMPLE4_DOUBLE_CRLF_DELIMETER = "foo\r\nbar\r\nbaz\r\n\r\n--bound\r\n42";
+    protected static final String SAMPLE5_DOUBLE_LF_DELIMETER = "foo\nbar\rbaz\n\n--bound\r\n42";
 
     protected String readStreamToString(InputStream bis) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

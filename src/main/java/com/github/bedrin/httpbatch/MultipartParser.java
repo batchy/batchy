@@ -10,65 +10,48 @@ import java.util.Arrays;
 
 public class MultipartParser {
 
-    private static final int PRE = 0;
-    private static final int PART = 1;
-    private static final int PART_BODY = 2;
-    public static final int CLOSED = -1;
-
     private final String boundary;
 
     public MultipartParser(String boundary) {
         this.boundary = "--" + boundary;
     }
 
+    private void drainInputStream(InputStream is) throws IOException {
+        while (is.read() != -1);
+    }
+
+    private byte[] printInputStream(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[8192];
+        int bytesRead;
+        while ((bytesRead = is.read(buffer)) != -1) {
+            baos.write(buffer, 0, bytesRead);
+        }
+        System.out.print(new String(baos.toByteArray()));
+        return baos.toByteArray();
+    }
+
     public void parseMultipartRequest(InputStream inputStream) throws IOException {
 
-        PushbackInputStream pis = new PushbackInputStream(inputStream, 1);
+        PushbackInputStream pis = new PushbackInputStream(inputStream);
 
-        int state = PRE;
-
-        ByteArrayOutputStream buff = new ByteArrayOutputStream();
-        ByteArrayOutputStream data = new ByteArrayOutputStream();
-
-        while (state != CLOSED) switch (state) {
-            case PRE: {
-
-                int i;
-                switch (i = pis.read()) {
-                    case -1: state = CLOSED; break;
-                    case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
-                    case '\n': {
-                        if (buff.size() == boundary.length() && Arrays.equals(buff.toByteArray(),boundary.getBytes())) state = PART;
-                        else if (buff.size() > 0) System.out.println("Pre: " + buff.toString());
-                        buff.reset();
-                        break;
-                    }
-                    default:
-                        buff.write(i);
-                }
-                break;
-            }
-            case PART: {
-                int i;
-                switch (i = pis.read()) {
-                    case -1  : state = CLOSED; break;
-                    case '\r': if ((i = pis.read()) != '\n') pis.unread(i);
-                    case '\n': {
-                        if (0 == buff.size()) state = PART_BODY;
-                        else System.out.println("Part Header: " + buff.toString());
-                        buff.reset();
-                        break;
-                    }
-                    default:
-                        buff.write(i);
-                }
-                break;
-            }
-            case PART_BODY: {
-                BoundedInputStream bis = new BoundedInputStream(inputStream, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-                bis.read();
-            }
+        // preface
+        {
+            pis.unread('\n');
+            BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
+            System.out.print("<PREFACE>");
+            printInputStream(bis);
+            System.out.println("</PREFACE>");
         }
+
+        // parts
+        do {
+            BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
+            System.out.print("<PART>");
+            if (printInputStream(bis).length == 0) break;
+            System.out.println("</PART>");
+        } while (true);
+
     }
 
 }

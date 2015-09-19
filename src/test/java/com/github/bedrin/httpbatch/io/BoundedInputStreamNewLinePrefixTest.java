@@ -50,4 +50,12 @@ public class BoundedInputStreamNewLinePrefixTest extends BaseBoundedInputStreamT
         assertEquals("\r\n42", readStreamToString(in));
     }
 
+    @Test
+    public void testReadSample5DoubleLfDelimeter() throws IOException {
+        final ByteArrayInputStream in = new ByteArrayInputStream(SAMPLE5_DOUBLE_LF_DELIMETER.getBytes());
+        InputStream bis = new BoundedInputStream(in, BOUNDARY, BoundedInputStream.Prefix.NEW_LINE);
+        assertEquals("foo\nbar\rbaz\n", readStreamToString(bis));
+        assertEquals("\r\n42", readStreamToString(in));
+    }
+
 }

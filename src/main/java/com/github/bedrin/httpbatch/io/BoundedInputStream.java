@@ -22,6 +22,7 @@ public class BoundedInputStream extends InputStream {
     }
 
     private boolean closed = false;
+    private boolean empty = false;
     private int pos = 0;
     private int size = 0;
 
@@ -36,6 +37,8 @@ public class BoundedInputStream extends InputStream {
     public int read() throws IOException {
 
         ensureOpen();
+
+        if (empty) return -1;
 
         if (pos < size) {
             return buf[pos++];
@@ -80,12 +83,14 @@ public class BoundedInputStream extends InputStream {
                 }
                 if (boundaryPos == boundary.length) {
                     // match
-                    close();
+                    empty = true;
                     return -1;
                 } else {
                     // push back \r and \n characters
-                    if (prefix == Prefix.NEW_LINE && ('\r' == i || '\n' == i)) pis.unread(i);
-                    else if (prefix == Prefix.CRLF_STRICT && '\r' == i) pis.unread(i);
+                    if (prefix == Prefix.NEW_LINE && ('\r' == i || '\n' == i))
+                        pis.unread(i);
+                    else if (prefix == Prefix.CRLF_STRICT && '\r' == i)
+                        pis.unread(i);
                     else buf[size++] = (byte) i;
                 }
                 return buf[pos++];
