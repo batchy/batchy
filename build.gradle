@@ -1,0 +1,14 @@
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "javax.servlet:servlet-api:2.5"
+    testCompile "junit:junit:4.12"
+}
+
