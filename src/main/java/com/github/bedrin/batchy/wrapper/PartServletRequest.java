@@ -1,16 +1,14 @@
 package com.github.bedrin.batchy.wrapper;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 
+// todo implement rest of the methods
 public class PartServletRequest extends HttpServletRequestWrapper {
 
     private final static String INCLUDE_CONTEXT_PATH = "javax.servlet.include.context_path";
