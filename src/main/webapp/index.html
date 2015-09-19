@@ -4,11 +4,34 @@
     <meta charset="UTF-8">
     <title>Multiplexer Example</title>
     <script type="application/javascript">
+        var reqA = 'POST /petclinic/testServlet/2\r\n'
+                   'Content-Type: application/json\r\n' +
+                   'Content-Length: part_content_length\r\n' +
+                   'If-Match: "etag/sheep"\r\n' +
+                   '\r\n' +
+                   '{\r\n' +
+                   '  "animalName": "sheep",\r\n' +
+                   '  "animalAge": "5"\r\n' +
+                   '  "peltColor": "green"\r\n' +
+                   '}\r\n';
+        var reqB = 'GET /petclinic/testServlet/1\r\n' +
+                   '\r\n';
+
         function sendMultipart() {
             xhr = new XMLHttpRequest();
             xhr.open('POST', 'batchy', false);
             xhr.setRequestHeader('Content-Type', 'multipart/mixed; boundary=foo');
-            xhr.send('--foo\r\nContent-Length: 5\r\n\r\n12345\r\n--foo--');
+            xhr.send(
+                '--foo\r\n' +
+                 'Content-Type: application/http\r\n' +
+                 '\r\n' +
+                 reqA +
+                 '--foo\r\n' +
+                 'Content-Type: application/http\r\n' +
+                 '\r\n' +
+                 reqB +
+                 '--foo--'
+             );
         }
     </script>
 </head>
