@@ -35,29 +35,47 @@ public class MultipartParser {
 
     public void parseMultipartRequest(InputStream inputStream) throws IOException {
 
-        PushbackInputStream pis = new PushbackInputStream(inputStream);
+        HeaderParser headerParser = new HeaderParser(false);
+
+        PushbackInputStream pis = new PushbackInputStream(inputStream, 2);
 
         // preface
         {
-            pis.unread('\n');
-            BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-            System.out.print("<PREFACE>");
-            printInputStream(bis);
-            System.out.println("</PREFACE>");
+            pis.unread('\n'); // todo workaround for no preface
+            drainInputStream(new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE));
         }
 
         // parts
         do {
+            if (wasLastPart(pis)) break;
             BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-            System.out.print("<PART>");
-            final HeaderParser headerParser = new HeaderParser(false);
-            for (Map.Entry<String, String> entry : headerParser.parseHeader(bis).entrySet()) {
-                System.out.println("Header: " + entry.getKey() + ": " + entry.getValue());
-            }
+            final Map<String, String> headers = headerParser.parseHeader(bis);
             if (printInputStream(bis).length == 0) break;
-            System.out.println("</PART>");
         } while (true);
 
+        // epilogue
+        drainInputStream(pis); // todo do we really need to drain it?
+
+    }
+
+    private boolean wasLastPart(PushbackInputStream pis) throws IOException {
+        int a = pis.read();
+        if (-1 == a) {
+            return true;
+        } else if ('-' == a) {
+            int b = pis.read();
+            if (-1 == b) {
+                return true;
+            } else if ('-' == b) {
+                return true;
+            } else {
+                pis.unread(a);
+                pis.unread(b);
+            }
+        } else {
+            pis.unread(a);
+        }
+        return false;
     }
 
 }
