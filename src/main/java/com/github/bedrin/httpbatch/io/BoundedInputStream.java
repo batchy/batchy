@@ -15,14 +15,20 @@ public class BoundedInputStream extends InputStream {
 
     private final byte[] buf;
 
+    private final Prefix prefix;
+
+    public enum Prefix {
+        NONE, CRLF_STRICT, NEW_LINE
+    }
+
     private boolean closed = false;
     private int pos = 0;
     private int size = 0;
 
-    public BoundedInputStream(InputStream in, byte[] boundary) {
+    public BoundedInputStream(InputStream in, byte[] boundary, Prefix prefix) {
         this.pis = new PushbackInputStream(in);
         this.boundary = boundary;
-
+        this.prefix = prefix;
         this.buf = new byte[boundary.length + 2];
     }
 
