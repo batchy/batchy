@@ -1,5 +1,7 @@
 package com.github.bedrin.httpbatch;
 
+import com.github.bedrin.httpbatch.io.BoundedInputStream;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,46 +65,8 @@ public class MultipartParser {
                 break;
             }
             case PART_BODY: {
-                // TODO: fail back to PartInputStream in case of large input
-                while (state == PART_BODY) {
-                    int i = pis.read();
-
-                    if (-1 == i) {
-                        buff.writeTo(data);
-                        System.out.println("Part Body: " + data.toString());
-                        data.reset();
-                        state = CLOSED;
-                    } else {
-                        ByteArrayOutputStream eol = new ByteArrayOutputStream();
-                        if (i == '\r') {
-                            eol.write(i);
-                            if ((i = pis.read()) != '\n') pis.unread(i);
-                        }
-                        if (i == '\n') {
-                            eol.write(i);
-                        }
-
-                        if (eol.size() > 0) {
-
-                            if (buff.size() == boundary.length() && Arrays.equals(buff.toByteArray(),boundary.getBytes())) {
-                                System.out.println("Part Body: " + data.toString());
-                                data.reset();
-                                state = PART;
-                            }
-                            else {
-                                buff.writeTo(data);
-                                eol.writeTo(data);
-                            }
-
-                            buff.reset();
-                            eol.reset();
-
-                        } else {
-                            buff.write(i);
-                        }
-                    }
-
-                }
+                BoundedInputStream bis = new BoundedInputStream(inputStream, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
+                bis.read();
             }
         }
     }

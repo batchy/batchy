@@ -48,15 +48,29 @@ public class BoundedInputStream extends InputStream {
             int i = pis.read();
 
             // if new character
-            if (i == '\r') {
-                buf[size++] = (byte) i;
-                if ((i = pis.read()) != '\n') pis.unread(i);
-            }
-            if (i == '\n') {
-                buf[size++] = (byte) i;
+            if (prefix == Prefix.NEW_LINE) {
+                if (i == '\r') {
+                    buf[size++] = (byte) i;
+                    if ((i = pis.read()) != '\n') pis.unread(i);
+                }
+                if (i == '\n') {
+                    buf[size++] = (byte) i;
+                }
+            } else if (prefix == Prefix.CRLF_STRICT) {
+                if (i == '\r') {
+                    if ((i = pis.read()) == '\n') {
+                        buf[size++] = '\r';
+                        buf[size++] = '\n';
+                    } else {
+                        pis.unread(i);
+                        i = '\r';
+                    }
+                }
+            } else {
+                pis.unread(i);
             }
 
-            if (size > 0) {
+            if (size > 0 || prefix == Prefix.NONE) {
                 // start of new line
                 int boundaryPos = 0;
                 while (
@@ -70,7 +84,8 @@ public class BoundedInputStream extends InputStream {
                     return -1;
                 } else {
                     // push back \r and \n characters
-                    if ('\r' == i || '\n' == i) pis.unread(i);
+                    if (prefix == Prefix.NEW_LINE && ('\r' == i || '\n' == i)) pis.unread(i);
+                    else if (prefix == Prefix.CRLF_STRICT && '\r' == i) pis.unread(i);
                     else buf[size++] = (byte) i;
                 }
                 return buf[pos++];
