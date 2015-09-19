@@ -3,11 +3,9 @@ package com.github.bedrin.httpbatch;
 import com.github.bedrin.httpbatch.io.BoundedInputStream;
 import com.github.bedrin.httpbatch.io.HeaderParser;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.Arrays;
 import java.util.Map;
 
 public class MultipartParser {
@@ -20,17 +18,6 @@ public class MultipartParser {
 
     private void drainInputStream(InputStream is) throws IOException {
         while (is.read() != -1);
-    }
-
-    private byte[] printInputStream(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[8192];
-        int bytesRead;
-        while ((bytesRead = is.read(buffer)) != -1) {
-            baos.write(buffer, 0, bytesRead);
-        }
-        System.out.print(new String(baos.toByteArray()));
-        return baos.toByteArray();
     }
 
     public void parseMultipartRequest(InputStream inputStream) throws IOException {

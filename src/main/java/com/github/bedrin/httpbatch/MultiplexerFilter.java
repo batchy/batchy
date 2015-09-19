@@ -1,5 +1,7 @@
 package com.github.bedrin.httpbatch;
 
+import com.github.bedrin.httpbatch.wrapper.PartServletRequest;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
