@@ -1,5 +1,6 @@
 package com.github.bedrin.batchy.io;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -15,7 +16,7 @@ public class MultipartParser {
         this.httpRequestProcessor = httpRequestProcessor;
     }
 
-    public void parseMultipartRequest(InputStream inputStream) throws IOException {
+    public void parseMultipartRequest(InputStream inputStream) throws IOException, ServletException {
 
         HeaderParser headerParser = new HeaderParser(false);
 
