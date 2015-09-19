@@ -10,7 +10,7 @@
 
     <servlet>
         <servlet-name>testServlet</servlet-name>
-        <servlet-class>com.github.bedrin.batchy.TestServlet</servlet-class>
+        <servlet-class>com.github.bedrin.batchy.test.TestServlet</servlet-class>
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>

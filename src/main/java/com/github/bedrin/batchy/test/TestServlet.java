@@ -1,4 +1,4 @@
-package com.github.bedrin.batchy;
+package com.github.bedrin.batchy.test;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

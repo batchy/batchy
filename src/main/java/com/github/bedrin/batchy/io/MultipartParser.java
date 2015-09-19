@@ -1,7 +1,4 @@
-package com.github.bedrin.batchy;
-
-import com.github.bedrin.batchy.io.BoundedInputStream;
-import com.github.bedrin.batchy.io.HeaderParser;
+package com.github.bedrin.batchy.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,10 +11,6 @@ public class MultipartParser {
 
     public MultipartParser(String boundary) {
         this.boundary = "--" + boundary;
-    }
-
-    private void drainInputStream(InputStream is) throws IOException {
-        while (is.read() != -1);
     }
 
     public void parseMultipartRequest(InputStream inputStream) throws IOException {
@@ -39,19 +32,11 @@ public class MultipartParser {
             Map<String, String> messageHeaders = headerParser.parseHeader(bis);
             String requestLine = headerParser.readFirstNotEmptyLine(bis);
             Map<String, String> httpHeaders = headerParser.parseHeader(bis);
-            //dump(httpHeaders);
-            //printInputStream(bis);
         } while (true);
 
         // epilogue
         drainInputStream(pis); // todo do we really need to drain it?
 
-    }
-
-    private void dump(Map<String,String> map) {
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            System.out.println(entry.getKey() + ": " + entry.getValue());
-        }
     }
 
     private boolean wasLastPart(PushbackInputStream pis) throws IOException {
@@ -72,6 +57,10 @@ public class MultipartParser {
             pis.unread(a);
         }
         return false;
+    }
+
+    private void drainInputStream(InputStream is) throws IOException {
+        while (is.read() != -1);
     }
 
 }

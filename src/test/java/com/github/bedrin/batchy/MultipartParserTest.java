@@ -1,5 +1,6 @@
 package com.github.bedrin.batchy;
 
+import com.github.bedrin.batchy.io.MultipartParser;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
