@@ -49,13 +49,21 @@ public class MultipartParser {
         do {
             if (wasLastPart(pis)) break;
             BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-            final Map<String, String> headers = headerParser.parseHeader(bis);
-            if (printInputStream(bis).length == 0) break;
+            final Map<String, String> messageHeaders = headerParser.parseHeader(bis);
+            final Map<String, String> httpHeaders = headerParser.parseHeader(bis);
+            dump(httpHeaders);
+            printInputStream(bis);
         } while (true);
 
         // epilogue
         drainInputStream(pis); // todo do we really need to drain it?
 
+    }
+
+    private void dump(Map<String,String> map) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            System.out.println(entry.getKey() + ": " + entry.getValue());
+        }
     }
 
     private boolean wasLastPart(PushbackInputStream pis) throws IOException {
