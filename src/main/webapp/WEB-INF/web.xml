@@ -26,6 +26,9 @@
     <filter-mapping>
         <filter-name>multiplexer</filter-name>
         <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+        <dispatcher>INCLUDE</dispatcher>
     </filter-mapping>
 
 </web-app>

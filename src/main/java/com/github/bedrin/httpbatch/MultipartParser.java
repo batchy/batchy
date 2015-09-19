@@ -68,6 +68,7 @@ public class MultipartParser {
                     int i = pis.read();
 
                     if (-1 == i) {
+                        buff.writeTo(data);
                         System.out.println("Part Body: " + data.toString());
                         data.reset();
                         state = CLOSED;

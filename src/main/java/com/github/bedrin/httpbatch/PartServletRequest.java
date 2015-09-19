@@ -10,6 +10,7 @@ public class PartServletRequest extends HttpServletRequestWrapper {
     }
 
     private String method;
+    private String contentType;
 
     @Override
     public String getMethod() {
@@ -20,4 +21,12 @@ public class PartServletRequest extends HttpServletRequestWrapper {
         this.method = method;
     }
 
+    @Override
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
 }

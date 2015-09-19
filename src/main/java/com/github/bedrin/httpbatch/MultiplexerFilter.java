@@ -33,6 +33,7 @@ public class MultiplexerFilter implements Filter {
                 try {
                     final PartServletRequest partServletRequest = new PartServletRequest(httpServletRequest);
                     partServletRequest.setMethod("GET");
+                    partServletRequest.setContentType(null);
 
                     CompletableFuture.runAsync(() -> {
                         try {
@@ -43,6 +44,7 @@ public class MultiplexerFilter implements Filter {
                     }).get();
 
                     partServletRequest.setMethod("POST");
+                    partServletRequest.setContentType("application/javascript");
 
                     CompletableFuture.runAsync(() -> {
                         try {
