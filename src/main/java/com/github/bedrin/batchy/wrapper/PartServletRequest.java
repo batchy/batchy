@@ -1,4 +1,4 @@
-package com.github.bedrin.httpbatch.wrapper;
+package com.github.bedrin.batchy.wrapper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;

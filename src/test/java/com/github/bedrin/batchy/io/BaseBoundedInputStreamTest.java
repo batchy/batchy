@@ -1,4 +1,4 @@
-package com.github.bedrin.httpbatch.io;
+package com.github.bedrin.batchy.io;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

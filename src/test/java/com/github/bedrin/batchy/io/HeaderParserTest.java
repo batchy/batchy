@@ -1,4 +1,4 @@
-package com.github.bedrin.httpbatch.io;
+package com.github.bedrin.batchy.io;
 
 import org.junit.Test;
 
