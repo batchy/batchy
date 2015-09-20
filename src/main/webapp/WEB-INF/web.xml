@@ -9,13 +9,13 @@
     <description>Spring PetClinic sample application</description>
 
     <servlet>
-        <servlet-name>testServlet</servlet-name>
-        <servlet-class>com.github.bedrin.batchy.test.TestServlet</servlet-class>
+        <servlet-name>mockServlet</servlet-name>
+        <servlet-class>com.github.bedrin.batchy.mock.MockServlet</servlet-class>
         <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>
-        <servlet-name>testServlet</servlet-name>
-        <url-pattern>/testServlet/*</url-pattern>
+        <servlet-name>mockServlet</servlet-name>
+        <url-pattern>/mockServlet/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
