@@ -58,10 +58,6 @@ public class Multiplexer implements HttpRequestProcessor {
         }
 
         String protocolVersion;
-        // If there's another token, its protocol version,
-        // followed by HTTP headers.
-        // NOTE: this now forces header names lower case since they are
-        // case insensitive and vary by client.
         if (st.hasMoreTokens()) {
             protocolVersion = st.nextToken();
         } else {
@@ -70,12 +66,15 @@ public class Multiplexer implements HttpRequestProcessor {
 
         String path = uri.substring(request.getContextPath().length());
         RequestDispatcher requestDispatcher = request.getRequestDispatcher(path);
+
         PartServletRequest servletRequest = new PartServletRequest(this.request);
         servletRequest.setMethod(method);
         servletRequest.setProtocol(protocolVersion);
         servletRequest.setInputStream(inputStream);
         servletRequest.setParameters(params);
-        servletRequest.setHeaders(httpHeaders); // headers must be filtered and merged
+        servletRequest.setHeaders(httpHeaders); // todo headers must be filtered and merged
+
+        // todo if request fits into buffer, execute it in a separate task
         requestDispatcher.include(servletRequest, new PartServletResponse(response));
 
     }

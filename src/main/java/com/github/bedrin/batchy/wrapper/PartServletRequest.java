@@ -40,7 +40,7 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     @Override
     public String getProtocol() {
-        return super.getProtocol();
+        return protocol;
     }
 
     public void setProtocol(String protocol) {
