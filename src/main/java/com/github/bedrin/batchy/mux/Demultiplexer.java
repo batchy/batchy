@@ -2,6 +2,7 @@ package com.github.bedrin.batchy.mux;
 
 import com.github.bedrin.batchy.io.HttpRequestProcessor;
 import com.github.bedrin.batchy.io.MultipartParser;
+import com.github.bedrin.batchy.io.PrefetchInputStream;
 import com.github.bedrin.batchy.util.MultiHashMap;
 import com.github.bedrin.batchy.wrapper.PartServletRequest;
 import com.github.bedrin.batchy.wrapper.PartServletResponse;
@@ -10,20 +11,30 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Demultiplexer implements HttpRequestProcessor {
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;
+    private final String boundary;
 
-    public Demultiplexer(HttpServletRequest request, HttpServletResponse response) {
+    private final Multiplexer multiplexer;
+
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
+
+    public Demultiplexer(HttpServletRequest request, HttpServletResponse response, String boundary) {
         this.request = request;
         this.response = response;
+        this.boundary = boundary;
+        this.multiplexer = new Multiplexer(request, response, boundary);
     }
 
     @Override
@@ -64,19 +75,41 @@ public class Demultiplexer implements HttpRequestProcessor {
             protocolVersion = "HTTP/1.1";
         }
 
-        String path = uri.substring(request.getContextPath().length());
-        RequestDispatcher requestDispatcher = request.getRequestDispatcher(path);
+        PrefetchInputStream pis = new PrefetchInputStream(inputStream);
 
-        PartServletRequest servletRequest = new PartServletRequest(this.request);
+        String path = uri.substring(request.getContextPath().length());
+        final RequestDispatcher requestDispatcher = request.getRequestDispatcher(path);
+        final PartServletRequest servletRequest = new PartServletRequest(this.request);
         servletRequest.setMethod(method);
         servletRequest.setProtocol(protocolVersion);
-        servletRequest.setInputStream(inputStream);
+        servletRequest.setInputStream(pis);
         servletRequest.setParameters(params);
         servletRequest.setHeaders(httpHeaders); // todo headers must be filtered and merged
 
-        // todo if request fits into buffer, execute it in a separate task
-        requestDispatcher.include(servletRequest, new PartServletResponse(response));
+        if (pis.prefetch()) {
+            multiplexer.addActiveRequest();
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        requestDispatcher.include(servletRequest, new PartServletResponse(response));
+                    } catch (ServletException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    multiplexer.finishActiveRequest();
+                }
+            });
+        } else {
+            requestDispatcher.include(servletRequest, new PartServletResponse(response));
+            drainInputStream(pis); // todo should we drain the input stream if it is not read by callee ?
+        }
 
+    }
+
+    private void drainInputStream(InputStream is) throws IOException {
+        while (is.read() != -1);
     }
 
     /**
@@ -124,12 +157,14 @@ public class Demultiplexer implements HttpRequestProcessor {
 
     public void service() throws IOException, ServletException {
 
-        String contentType = request.getContentType();
-        String boundary = contentType.substring("multipart/mixed; boundary=".length());
         MultipartParser multipartParser = new MultipartParser(boundary, this);
         multipartParser.parseMultipartRequest(request.getInputStream());
 
-
+        try {
+            multiplexer.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // todo should we do something better?
+        }
 
     }
 

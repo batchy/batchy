@@ -32,18 +32,9 @@ public class BatchyServlet extends HttpServlet {
             return;
         }
 
-        /*{
-            StringBuilder sb = new StringBuilder();
-            int i;
-            final ServletInputStream inputStream = request.getInputStream();
-            while ((i = inputStream.read()) != -1) {
-                sb.appendCodePoint(i);
-            }
-            System.out.println(sb.toString());
-        }*/
+        String boundary = contentType.substring("multipart/mixed; boundary=".length());
 
-
-        Demultiplexer demultiplexer = new Demultiplexer(request, response);
+        Demultiplexer demultiplexer = new Demultiplexer(request, response, boundary);
         demultiplexer.service();
 
         /*String boundary = contentType.substring("multipart/mixed; boundary=".length());

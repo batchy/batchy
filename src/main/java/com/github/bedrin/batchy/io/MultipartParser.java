@@ -37,7 +37,7 @@ public class MultipartParser {
             String requestLine = headerParser.readFirstNotEmptyLine(bis);
             MultiHashMap<String, String> httpHeaders = headerParser.parseHeader(bis);
             httpRequestProcessor.processHttpRequest(messageHeaders, requestLine, httpHeaders, bis);
-            drainInputStream(bis); // todo do we need this precaution?
+
         } while (true);
 
         // epilogue

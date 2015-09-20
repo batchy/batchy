@@ -3,6 +3,8 @@ package com.github.bedrin.batchy.io;
 import com.github.bedrin.batchy.util.MultiHashMap;
 import org.junit.Test;
 import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -46,6 +48,22 @@ public class MultipartParserTest {
                 "--batch_foobarbaz--";
 
         HttpRequestProcessor httpRequestProcessor = mock(HttpRequestProcessor.class);
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                // Consume the whole input stream
+                InputStream is = (InputStream) invocation.getArguments()[3];
+                while (is.read() != -1);
+                return null;
+            }
+        }).when(httpRequestProcessor).processHttpRequest(
+                Matchers.<MultiHashMap<String,String>>anyObject(),
+                anyString(),
+                Matchers.<MultiHashMap<String,String>>anyObject(),
+                Matchers.<InputStream>anyObject()
+        );
+
         MultipartParser hrp = new MultipartParser("batch_foobarbaz", httpRequestProcessor);
         hrp.parseMultipartRequest(new ByteArrayInputStream(raw.getBytes()));
 
