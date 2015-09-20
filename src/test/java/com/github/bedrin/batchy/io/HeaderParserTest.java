@@ -1,13 +1,13 @@
 package com.github.bedrin.batchy.io;
 
+import com.github.bedrin.batchy.util.MultiHashMap;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class HeaderParserTest {
 
@@ -23,10 +23,10 @@ public class HeaderParserTest {
         HeaderParser headerParser = new HeaderParser(false);
 
         String requestLine = headerParser.readFirstNotEmptyLine(inputStream);
-        Map<String, String> headers = headerParser.parseHeader(inputStream);
+        MultiHashMap<String, String> headers = headerParser.parseHeader(inputStream);
 
         assertEquals("GET /farm/v1/animals", requestLine);
-        assertEquals("\"etag/animals\"", headers.get("If-None-Match"));
+        assertEquals("\"etag/animals\"", headers.getFirst("If-None-Match"));
 
     }
 
@@ -53,12 +53,12 @@ public class HeaderParserTest {
         HeaderParser headerParser = new HeaderParser(false);
 
         String requestLine = headerParser.readFirstNotEmptyLine(inputStream);
-        Map<String, String> headers = headerParser.parseHeader(inputStream);
+        MultiHashMap<String, String> headers = headerParser.parseHeader(inputStream);
 
         assertEquals("PUT /farm/v1/animals/sheep", requestLine);
-        assertEquals("application/json", headers.get("Content-Type"));
-        assertEquals("part_content_length", headers.get("Content-Length"));
-        assertEquals("\"etag/sheep\"", headers.get("If-Match"));
+        assertEquals("application/json", headers.getFirst("Content-Type"));
+        assertEquals("part_content_length", headers.getFirst("Content-Length"));
+        assertEquals("\"etag/sheep\"", headers.getFirst("If-Match"));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buffer = new byte[8192];

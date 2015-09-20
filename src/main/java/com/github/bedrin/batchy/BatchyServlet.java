@@ -1,14 +1,16 @@
 package com.github.bedrin.batchy;
 
 import com.github.bedrin.batchy.mux.Multiplexer;
-import com.github.bedrin.batchy.wrapper.PartServletRequest;
 
-import javax.servlet.*;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class BatchyServlet extends HttpServlet {
 
@@ -31,6 +33,17 @@ public class BatchyServlet extends HttpServlet {
             response.sendError(415);
             return;
         }
+
+        /*{
+            StringBuilder sb = new StringBuilder();
+            int i;
+            final ServletInputStream inputStream = request.getInputStream();
+            while ((i = inputStream.read()) != -1) {
+                sb.appendCodePoint(i);
+            }
+            System.out.println(sb.toString());
+        }*/
+
 
         Multiplexer multiplexer = new Multiplexer(request, response);
         multiplexer.service();

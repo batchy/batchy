@@ -1,10 +1,11 @@
 package com.github.bedrin.batchy.io;
 
+import com.github.bedrin.batchy.util.MultiHashMap;
+
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.Map;
 
 public class MultipartParser {
 
@@ -32,9 +33,9 @@ public class MultipartParser {
         do {
             if (wasLastPart(pis)) break;
             BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-            Map<String, String> messageHeaders = headerParser.parseHeader(bis);
+            MultiHashMap<String, String> messageHeaders = headerParser.parseHeader(bis);
             String requestLine = headerParser.readFirstNotEmptyLine(bis);
-            Map<String, String> httpHeaders = headerParser.parseHeader(bis);
+            MultiHashMap<String, String> httpHeaders = headerParser.parseHeader(bis);
             httpRequestProcessor.processHttpRequest(messageHeaders, requestLine, httpHeaders, bis);
             drainInputStream(bis); // todo do we need this precaution?
         } while (true);

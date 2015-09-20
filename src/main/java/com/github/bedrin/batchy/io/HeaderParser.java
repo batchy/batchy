@@ -1,11 +1,10 @@
 package com.github.bedrin.batchy.io;
 
+import com.github.bedrin.batchy.util.MultiHashMap;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class HeaderParser {
 
@@ -45,9 +44,9 @@ public class HeaderParser {
     }
 
     // TODO support folder headers and other special cases from RFC822 (section 3 - Lexical)
-    public Map<String, String> parseHeader(InputStream in) throws IOException {
+    public MultiHashMap<String, String> parseHeader(InputStream in) throws IOException {
 
-        final Map<String, String> headers = new LinkedHashMap<String, String>();
+        final MultiHashMap<String, String> headers = new MultiHashMap<String, String>();
 
         PushbackInputStream pis = new PushbackInputStream(in);
         int i;
@@ -81,11 +80,11 @@ public class HeaderParser {
 
         }
 
-        return Collections.unmodifiableMap(headers);
+        return headers;
 
     }
 
-    private void parseHeader(Map<String, String> headers, String header) {
+    private void parseHeader(MultiHashMap<String, String> headers, String header) {
         String name;
         String value = null;
 
@@ -99,7 +98,7 @@ public class HeaderParser {
             name = header.trim();
         }
 
-        headers.put(name, value);
+        headers.add(name, value);
     }
 
 }

@@ -1,16 +1,17 @@
 package com.github.bedrin.batchy.io;
 
+import com.github.bedrin.batchy.util.MultiHashMap;
+
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 public interface HttpRequestProcessor {
 
     void processHttpRequest(
-            Map<String, String> messageHeaders,
+            MultiHashMap<String, String> messageHeaders,
             String requestLine,
-            Map<String, String> httpHeaders,
+            MultiHashMap<String, String> httpHeaders,
             InputStream inputStream) throws ServletException, IOException;
 
 }

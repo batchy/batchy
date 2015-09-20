@@ -38,7 +38,9 @@ public class BoundedInputStream extends InputStream {
 
         ensureOpen();
 
-        if (empty) return -1;
+        if (empty) {
+            return -1;
+        }
 
         if (pos < size) {
             // buffer is not empty - server content from it

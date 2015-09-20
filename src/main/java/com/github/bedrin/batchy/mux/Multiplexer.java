@@ -2,6 +2,7 @@ package com.github.bedrin.batchy.mux;
 
 import com.github.bedrin.batchy.io.HttpRequestProcessor;
 import com.github.bedrin.batchy.io.MultipartParser;
+import com.github.bedrin.batchy.util.MultiHashMap;
 import com.github.bedrin.batchy.wrapper.PartServletRequest;
 import com.github.bedrin.batchy.wrapper.PartServletResponse;
 
@@ -13,8 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class Multiplexer implements HttpRequestProcessor {
@@ -29,9 +28,9 @@ public class Multiplexer implements HttpRequestProcessor {
 
     @Override
     public void processHttpRequest(
-            Map<String, String> messageHeaders,
+            MultiHashMap<String, String> messageHeaders,
             String requestLine,
-            Map<String, String> httpHeaders,
+            MultiHashMap<String, String> httpHeaders,
             InputStream inputStream) throws ServletException, IOException {
 
         StringTokenizer st = new StringTokenizer(requestLine);
@@ -47,7 +46,7 @@ public class Multiplexer implements HttpRequestProcessor {
 
         String uri = st.nextToken();
 
-        Map<String, String> params = new HashMap<String, String>();
+        MultiHashMap<String, String> params = new MultiHashMap<String, String>();
 
         // Decode parameters from the URI
         int qmi = uri.indexOf('?');
@@ -58,11 +57,25 @@ public class Multiplexer implements HttpRequestProcessor {
             uri = decodePercent(uri);
         }
 
+        String protocolVersion;
+        // If there's another token, its protocol version,
+        // followed by HTTP headers.
+        // NOTE: this now forces header names lower case since they are
+        // case insensitive and vary by client.
+        if (st.hasMoreTokens()) {
+            protocolVersion = st.nextToken();
+        } else {
+            protocolVersion = "HTTP/1.1";
+        }
+
         String path = uri.substring(request.getContextPath().length());
         RequestDispatcher requestDispatcher = request.getRequestDispatcher(path);
         PartServletRequest servletRequest = new PartServletRequest(this.request);
         servletRequest.setMethod(method);
+        servletRequest.setProtocol(protocolVersion);
         servletRequest.setInputStream(inputStream);
+        servletRequest.setParameters(params);
+        servletRequest.setHeaders(httpHeaders); // headers must be filtered and merged
         requestDispatcher.include(servletRequest, new PartServletResponse(response));
 
     }
@@ -73,7 +86,7 @@ public class Multiplexer implements HttpRequestProcessor {
      * Map. NOTE: this doesn't support multiple identical keys due to the
      * simplicity of Map.
      */
-    private void decodeParms(String parms, Map<String, String> p) throws IOException {
+    private void decodeParms(String parms, MultiHashMap<String, String> p) throws IOException {
         if (parms == null) {
             return;
         }
@@ -83,9 +96,9 @@ public class Multiplexer implements HttpRequestProcessor {
             String e = st.nextToken();
             int sep = e.indexOf('=');
             if (sep >= 0) {
-                p.put(decodePercent(e.substring(0, sep)).trim(), decodePercent(e.substring(sep + 1)));
+                p.add(decodePercent(e.substring(0, sep)).trim(), decodePercent(e.substring(sep + 1)));
             } else {
-                p.put(decodePercent(e).trim(), "");
+                p.add(decodePercent(e).trim(), "");
             }
         }
     }
