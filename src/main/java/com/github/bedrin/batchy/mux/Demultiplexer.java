@@ -16,12 +16,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
-public class Multiplexer implements HttpRequestProcessor {
+public class Demultiplexer implements HttpRequestProcessor {
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
-    public Multiplexer(HttpServletRequest request, HttpServletResponse response) {
+    public Demultiplexer(HttpServletRequest request, HttpServletResponse response) {
         this.request = request;
         this.response = response;
     }
@@ -51,7 +51,7 @@ public class Multiplexer implements HttpRequestProcessor {
         // Decode parameters from the URI
         int qmi = uri.indexOf('?');
         if (qmi >= 0) {
-            decodeParms(uri.substring(qmi + 1), params);
+            decodeParams(uri.substring(qmi + 1), params);
             uri = decodePercent(uri.substring(0, qmi));
         } else {
             uri = decodePercent(uri);
@@ -85,7 +85,7 @@ public class Multiplexer implements HttpRequestProcessor {
      * Map. NOTE: this doesn't support multiple identical keys due to the
      * simplicity of Map.
      */
-    private void decodeParms(String parms, MultiHashMap<String, String> p) throws IOException {
+    private void decodeParams(String parms, MultiHashMap<String, String> p) throws IOException {
         if (parms == null) {
             return;
         }
