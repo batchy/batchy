@@ -1,10 +1,7 @@
 package com.github.bedrin.batchy.io;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 // todo think of a better naming ?
 /**
@@ -21,7 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @version %I%, %G%
  * @since   JDK1.0
  */
-public class CollectingOutputStream extends FilterOutputStream {
+public class LazyOutputStream extends OutputStream {
 
     /**
      * The internal buffer where data is stored.
@@ -36,14 +33,12 @@ public class CollectingOutputStream extends FilterOutputStream {
      */
     protected int count;
 
-    /**
-     * Creates a new buffered output stream to write data to the
-     * specified underlying output stream.
-     *
-     * @param   out   the underlying output stream.
-     */
-    public CollectingOutputStream(OutputStream out) {
-        this(out, 8192);
+    private OutputStream out;
+
+    private OutputStreamSupplier outputStreamSupplier;
+
+    public LazyOutputStream(OutputStreamSupplier outputStreamSupplier) {
+        this(outputStreamSupplier, 8192);
     }
 
     /**
@@ -51,16 +46,22 @@ public class CollectingOutputStream extends FilterOutputStream {
      * specified underlying output stream with the specified buffer
      * size.
      *
-     * @param   out    the underlying output stream.
      * @param   size   the buffer size.
      * @exception IllegalArgumentException if size &lt;= 0.
      */
-    public CollectingOutputStream(OutputStream out, int size) {
-        super(out);
+    public LazyOutputStream(OutputStreamSupplier outputStreamSupplier, int size) {
+        if (null == outputStreamSupplier) {
+            throw new IllegalArgumentException("outputStreamSupplier is null");
+        }
+        this.outputStreamSupplier = outputStreamSupplier;
         if (size <= 0) {
             throw new IllegalArgumentException("Buffer size <= 0");
         }
         buf = new byte[size];
+    }
+
+    public int getSize() {
+        return buf.length;
     }
 
     public void reset() {
@@ -69,7 +70,7 @@ public class CollectingOutputStream extends FilterOutputStream {
 
     /** Flush the internal buffer */
     private void flushBuffer() throws IOException {
-        notifyBeforeFlush();
+        getTargetStream();
         if (count > 0) {
             out.write(buf, 0, count);
             count = 0;
@@ -133,24 +134,12 @@ public class CollectingOutputStream extends FilterOutputStream {
         out.flush();
     }
 
-    private List<FlushListener> listenerList = new CopyOnWriteArrayList<FlushListener>();
-
-    public void addListener(FlushListener listener) {
-        listenerList.add(listener);
+    private void getTargetStream() throws IOException {
+        if (null == out) out = outputStreamSupplier.get();
     }
 
-    public void removeListener(FlushListener listener) {
-        listenerList.remove(listener);
-    }
-
-    private void notifyBeforeFlush() {
-        for (FlushListener listener : listenerList) {
-            listener.onBeforeFlush();
-        }
-    }
-
-    public interface FlushListener {
-        void onBeforeFlush();
+    public interface OutputStreamSupplier {
+        OutputStream get() throws IOException;
     }
 
 }
