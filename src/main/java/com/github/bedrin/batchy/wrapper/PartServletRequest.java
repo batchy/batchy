@@ -149,6 +149,8 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     // Headers
 
+    // todo filter and merge headers with enclosing request
+
     private MultiHashMap<String,String> headers;
 
     public void setHeaders(MultiHashMap<String, String> headers) {
@@ -215,5 +217,6 @@ public class PartServletRequest extends HttpServletRequestWrapper {
     // attributes
 
     // todo implement attributes
+    // todo implement communication via attributes?
 
 }

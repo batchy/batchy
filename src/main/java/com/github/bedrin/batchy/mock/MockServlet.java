@@ -7,6 +7,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+/**
+ * Used for testing on deveopment machines only
+ * todo move to another codebase (separate module or whatever?)
+ */
 public class MockServlet extends HttpServlet {
 
     @Override
