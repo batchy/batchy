@@ -1,4 +1,7 @@
 # Batchy - Batching for HTTP requests
+
+[![CI Status](https://travis-ci.org/bedrin/batchy.svg?branch=master)](https://travis-ci.org/bedrin/batchy)
+
 Batchy is a protocol for batching HTTP request - it allows you to send multiple HTTP requests over a single plain HTTP/1.x
 It can provide significant performance improvements especially in big latency environments and high load systems
 
