@@ -6,13 +6,13 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Multiplexer {
+public class AsyncMultiplexer {
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final String boundary;
 
-    public Multiplexer(HttpServletRequest request, HttpServletResponse response, String boundary) {
+    public AsyncMultiplexer(HttpServletRequest request, HttpServletResponse response, String boundary) {
         this.request = request;
         this.response = response;
         this.boundary = boundary;

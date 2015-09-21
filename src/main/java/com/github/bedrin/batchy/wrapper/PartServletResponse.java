@@ -1,7 +1,7 @@
 package com.github.bedrin.batchy.wrapper;
 
 import com.github.bedrin.batchy.io.LazyOutputStream;
-import com.github.bedrin.batchy.mux.Multiplexer;
+import com.github.bedrin.batchy.mux.AsyncMultiplexer;
 import com.github.bedrin.batchy.util.DateUtils;
 import com.github.bedrin.batchy.util.MultiHashMap;
 
@@ -17,11 +17,13 @@ import java.util.*;
 // todo implement rest of the methods
 public class PartServletResponse extends HttpServletResponseWrapper implements LazyOutputStream.OutputStreamSupplier {
 
-    private final Multiplexer multiplexer;
+    private final AsyncMultiplexer multiplexer;
+    private final String boundary;
 
-    public PartServletResponse(Multiplexer multiplexer, HttpServletResponse response) {
+    public PartServletResponse(AsyncMultiplexer multiplexer, HttpServletResponse response, String boundary) {
         super(response);
         this.multiplexer = multiplexer;
+        this.boundary = boundary;
     }
 
     // flush and commit logic
@@ -58,6 +60,9 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     private void commitHeaders(ServletOutputStream sos) {
         PrintWriter pw = new PrintWriter(sos);
+
+        pw.append("\r\n--").append(boundary).append("\r\n").append("Content-Type: application/http\r\n\r\n");
+
         pw.
                 append("HTTP/1.1"). // todo take protocol version from request
                 append(" ").

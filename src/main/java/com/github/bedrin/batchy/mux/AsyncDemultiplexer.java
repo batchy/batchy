@@ -11,7 +11,6 @@ import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -20,21 +19,21 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class Demultiplexer implements HttpRequestProcessor {
+public class AsyncDemultiplexer implements HttpRequestProcessor {
 
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final String boundary;
 
-    private final Multiplexer multiplexer;
+    private final AsyncMultiplexer multiplexer;
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public Demultiplexer(HttpServletRequest request, HttpServletResponse response, String boundary) {
+    public AsyncDemultiplexer(HttpServletRequest request, HttpServletResponse response, String boundary) {
         this.request = request;
         this.response = response;
         this.boundary = boundary;
-        this.multiplexer = new Multiplexer(request, response, boundary);
+        this.multiplexer = new AsyncMultiplexer(request, response, boundary);
     }
 
     @Override
@@ -86,7 +85,7 @@ public class Demultiplexer implements HttpRequestProcessor {
         servletRequest.setParameters(params);
         servletRequest.setHeaders(httpHeaders); // todo headers must be filtered and merged
 
-        final PartServletResponse servletResponse = new PartServletResponse(multiplexer, response);
+        final PartServletResponse servletResponse = new PartServletResponse(multiplexer, response, boundary);
 
         if (pis.prefetch()) {
             multiplexer.addActiveRequest();
@@ -185,6 +184,8 @@ public class Demultiplexer implements HttpRequestProcessor {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // todo should we do something better?
         }
+
+        response.getOutputStream().write(("\r\n--" + boundary + "--").getBytes());
 
     }
 

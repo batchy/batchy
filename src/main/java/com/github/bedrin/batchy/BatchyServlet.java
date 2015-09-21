@@ -1,18 +1,14 @@
 package com.github.bedrin.batchy;
 
-import com.github.bedrin.batchy.mux.Demultiplexer;
+import com.github.bedrin.batchy.mux.AsyncDemultiplexer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class BatchyServlet extends HttpServlet {
-
-    final ExecutorService executorService = Executors.newCachedThreadPool();
 
     @Override
     public void service(final HttpServletRequest request, final HttpServletResponse response)
@@ -34,49 +30,8 @@ public class BatchyServlet extends HttpServlet {
 
         String boundary = contentType.substring("multipart/mixed; boundary=".length());
 
-        Demultiplexer demultiplexer = new Demultiplexer(request, response, boundary);
+        AsyncDemultiplexer demultiplexer = new AsyncDemultiplexer(request, response, boundary);
         demultiplexer.service();
-
-        /*String boundary = contentType.substring("multipart/mixed; boundary=".length());
-        String contentEncoding = request.getCharacterEncoding();
-
-        try {
-
-            Future<?> getFuture = executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final PartServletRequest partServletRequest = new PartServletRequest(request);
-                        partServletRequest.setMethod("GET");
-                        partServletRequest.setContentType(null);
-                        request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            Future<?> postFuture = executorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        final PartServletRequest partServletRequest = new PartServletRequest(request);
-                        partServletRequest.setMethod("POST");
-                        partServletRequest.setContentType("application/javascript");
-                        request.getRequestDispatcher("/testServlet/1").include(partServletRequest, response);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            getFuture.get();
-            postFuture.get();
-        } catch (InterruptedException e) {
-            throw new ServletException(e);
-        } catch (ExecutionException e) {
-            throw new ServletException(e);
-        }*/
 
     }
 
