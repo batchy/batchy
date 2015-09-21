@@ -18,6 +18,14 @@ public class Multiplexer {
         this.boundary = boundary;
     }
 
+    private final Lock responseLock = new ReentrantLock();
+
+    public Lock getResponseLock() {
+        return responseLock;
+    }
+
+    // todo wat? too many words for synchronization, isn't it?
+
     private Lock partsLock = new ReentrantLock();
     private Condition allPartsProcessed = partsLock.newCondition();
     private int activeRequests;

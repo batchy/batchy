@@ -86,23 +86,43 @@ public class Demultiplexer implements HttpRequestProcessor {
         servletRequest.setParameters(params);
         servletRequest.setHeaders(httpHeaders); // todo headers must be filtered and merged
 
+        final PartServletResponse servletResponse = new PartServletResponse(multiplexer, response);
+
         if (pis.prefetch()) {
             multiplexer.addActiveRequest();
             executorService.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        requestDispatcher.include(servletRequest, new PartServletResponse(response));
+                        // todo write boundary before the actual response
+                        requestDispatcher.include(servletRequest, servletResponse);
+                        servletResponse.flushBuffer();
                     } catch (ServletException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
                         e.printStackTrace();
+                    } finally {
+                        try {
+                            multiplexer.getResponseLock().unlock();
+                        } catch (IllegalMonitorStateException e) {
+                            e.printStackTrace();
+                        }
                     }
                     multiplexer.finishActiveRequest();
                 }
             });
         } else {
-            requestDispatcher.include(servletRequest, new PartServletResponse(response));
+            try {
+                // todo write boundary before the actual response
+                requestDispatcher.include(servletRequest, servletResponse);
+                servletResponse.flushBuffer();
+            } finally {
+                try {
+                    multiplexer.getResponseLock().unlock();
+                } catch (IllegalMonitorStateException e) {
+                    e.printStackTrace();
+                }
+            }
             drainInputStream(pis); // todo should we drain the input stream if it is not read by callee ?
         }
 

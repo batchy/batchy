@@ -1,6 +1,7 @@
 package com.github.bedrin.batchy.wrapper;
 
 import com.github.bedrin.batchy.io.LazyOutputStream;
+import com.github.bedrin.batchy.mux.Multiplexer;
 import com.github.bedrin.batchy.util.DateUtils;
 import com.github.bedrin.batchy.util.MultiHashMap;
 
@@ -18,8 +19,11 @@ import java.util.Locale;
 // todo implement rest of the methods
 public class PartServletResponse extends HttpServletResponseWrapper implements LazyOutputStream.OutputStreamSupplier {
 
-    public PartServletResponse(HttpServletResponse response) {
+    private final Multiplexer multiplexer;
+
+    public PartServletResponse(Multiplexer multiplexer, HttpServletResponse response) {
         super(response);
+        this.multiplexer = multiplexer;
     }
 
     // flush and commit logic
@@ -43,7 +47,7 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public OutputStream get() throws IOException {
-        // todo obtain lock here
+        multiplexer.getResponseLock().lock();
         // todo commit headers and stuff here
         return getResponse().getOutputStream();
     }
@@ -76,9 +80,12 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public void flushBuffer() throws IOException {
-        if (null != lazyOutputStream) {
-            lazyOutputStream.flush();
+        if (null != writer) {
+            writer.flush();
+        } else if (null != outputStream) {
+            outputStream.flush();
         }
+
         setCommitted();
     }
 
