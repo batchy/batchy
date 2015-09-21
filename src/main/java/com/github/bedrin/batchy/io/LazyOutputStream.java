@@ -3,7 +3,6 @@ package com.github.bedrin.batchy.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-// todo think of a better naming ?
 /**
  * A copy of {@link java.io.BufferedOutputStream} with additional functionality
  * of notifying listeners before flush event

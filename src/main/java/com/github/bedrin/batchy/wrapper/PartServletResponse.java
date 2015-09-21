@@ -12,9 +12,7 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
 
 // todo implement rest of the methods
 public class PartServletResponse extends HttpServletResponseWrapper implements LazyOutputStream.OutputStreamSupplier {
@@ -45,11 +43,41 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     // flushing and streams
 
+    private boolean headersSent = false; // todo can we use committed instead
+
     @Override
     public OutputStream get() throws IOException {
         multiplexer.getResponseLock().lock();
-        // todo commit headers and stuff here
-        return getResponse().getOutputStream();
+        final ServletOutputStream outputStream = getResponse().getOutputStream();
+        if (!headersSent) {
+            commitHeaders(outputStream);
+            headersSent = true;
+        }
+        return outputStream;
+    }
+
+    private void commitHeaders(ServletOutputStream sos) {
+        PrintWriter pw = new PrintWriter(sos);
+        pw.
+                append("HTTP/1.1"). // todo take protocol version from request
+                append(" ").
+                append(Integer.toString(statusCode));
+
+        if (null != statusMessage) {
+            pw.append(" ").append(statusMessage);
+        }
+
+        pw.append("\r\n");
+
+        for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+            for (String value : entry.getValue()) {
+                pw.append(entry.getKey()).append(": ").append(value).append("\r\n");
+            }
+        }
+
+        pw.append("\r\n");
+
+        pw.flush();
     }
 
     private LazyOutputStream lazyOutputStream;

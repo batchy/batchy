@@ -11,6 +11,8 @@ public class MockServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        resp.addHeader("foo","a");
+        resp.addHeader("bar","b");
         resp.getWriter().println("Hello World!");
     }
 
@@ -21,7 +23,8 @@ public class MockServlet extends HttpServlet {
         while ((line = br.readLine()) != null) {
             System.out.println(line);
         }
-
+        resp.addHeader("baz","3");
+        resp.addHeader("blabla","42");
         resp.getWriter().println("Hello World!");
     }
 }
