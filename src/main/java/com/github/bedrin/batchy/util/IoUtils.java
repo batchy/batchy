@@ -12,4 +12,33 @@ public class IoUtils {
         while (is.read(buffer) != -1);
     }
 
+    public static String extractSemicolonSeparatedAttribute(String raw, String attributeName) {
+        if (null != raw) {
+            int charsetIx = raw.indexOf(attributeName + "=");
+            if (charsetIx != -1) {
+                int semicolonIx = raw.indexOf(';', charsetIx);
+                return IoUtils.trim(
+                        raw.substring(
+                                charsetIx + (attributeName + "=").length(), -1 == semicolonIx ? raw.length() : semicolonIx
+                        ).trim(),"\""
+                );
+            }
+        }
+        return null;
+    }
+
+    public static String trim(String source, String characters) {
+        int st = 0;
+        int len = source.length();
+        char[] val = source.toCharArray();
+
+        while ((st < len) && (characters.indexOf(val[st]) != -1)) {
+            st++;
+        }
+        while ((st < len) && (characters.indexOf(val[len - 1]) != -1)) {
+            len--;
+        }
+        return ((st > 0) || (len < source.length())) ? source.substring(st, len) : source;
+    }
+
 }

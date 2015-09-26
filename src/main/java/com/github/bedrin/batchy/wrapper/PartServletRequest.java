@@ -223,14 +223,7 @@ public class PartServletRequest extends HttpServletRequestWrapper {
     }
 
     public static String parseCharacterEncoding(String contentType) {
-        if (null != contentType) {
-            int charsetIx = contentType.indexOf("charset=");
-            if (charsetIx != -1) {
-                int semicolonIx = contentType.indexOf(';', charsetIx);
-                return contentType.substring(charsetIx + "charsest=".length() - 1, -1 == semicolonIx ? contentType.length() : semicolonIx);
-            }
-        }
-        return null;
+        return IoUtils.extractSemicolonSeparatedAttribute(contentType, "charset");
     }
 
     @Override

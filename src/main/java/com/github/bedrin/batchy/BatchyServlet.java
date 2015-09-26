@@ -1,11 +1,13 @@
 package com.github.bedrin.batchy;
 
 import com.github.bedrin.batchy.mux.AsyncDemultiplexer;
+import com.github.bedrin.batchy.util.IoUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
 
 public class BatchyServlet extends HttpServlet {
@@ -28,7 +30,11 @@ public class BatchyServlet extends HttpServlet {
             return;
         }
 
-        String boundary = contentType.substring("multipart/mixed; boundary=".length());
+        if ("100-continue".equalsIgnoreCase(request.getHeader("Expect"))) {
+            // todo optionally send HTTP 100 status code
+        }
+
+        String boundary = IoUtils.extractSemicolonSeparatedAttribute(contentType, "boundary");
 
         AsyncDemultiplexer demultiplexer = new AsyncDemultiplexer(request, response, boundary);
         demultiplexer.service();

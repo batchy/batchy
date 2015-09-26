@@ -1,9 +1,6 @@
 package com.github.bedrin.batchy.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MultiHashMap<K,V> extends HashMap<K,List<V>> {
 
@@ -16,6 +13,26 @@ public class MultiHashMap<K,V> extends HashMap<K,List<V>> {
             newList = new ArrayList<V>(existingList);
         }
         newList.add(value);
+        return put(key, newList);
+    }
+
+    public void addAll(MultiHashMap<K,V> that) {
+        for (Map.Entry<K, List<V>> entry : that.entrySet()) {
+            add(entry.getKey(), new IteratorEnumeration<V>(entry.getValue()));
+        }
+    }
+
+    public List<V> add(K key, Enumeration<V> values) {
+        List<V> existingList = get(key);
+        List<V> newList;
+        if (existingList == null) {
+            newList = new ArrayList<V>();
+        } else {
+            newList = new ArrayList<V>(existingList);
+        }
+        while (values.hasMoreElements()) {
+            newList.add(values.nextElement());
+        }
         return put(key, newList);
     }
 

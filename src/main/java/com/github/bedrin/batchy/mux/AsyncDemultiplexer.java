@@ -15,9 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +29,7 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
     private final AsyncMultiplexer multiplexer;
 
     private final Map<String, Object> attributesMap = new ConcurrentHashMap<String, Object>();
+    private final MultiHashMap<String, String> headersMap = new MultiHashMap<String, String>();
 
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -46,6 +45,16 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
             if (null != attributeNameObj && attributeNameObj instanceof String) {
                 final String attributeName = (String) attributeNameObj;
                 attributesMap.put(attributeName, request.getAttribute(attributeName));
+            }
+        }
+
+        final Enumeration headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            Object headerNameObj = headerNames.nextElement();
+            if (null != headerNameObj && headerNameObj instanceof String) {
+                final String headerName = (String) headerNameObj;
+                if (!headerName.startsWith("Content-"))
+                    headersMap.add(headerName, request.getHeaders(headerName));
             }
         }
 
@@ -98,7 +107,10 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
         servletRequest.setProtocol(protocolVersion);
         servletRequest.setInputStream(pis);
         servletRequest.setParameters(params);
-        servletRequest.setHeaders(httpHeaders); // todo headers must be filtered and merged
+
+        httpHeaders.addAll(headersMap);
+        servletRequest.setHeaders(httpHeaders);
+
         servletRequest.setAttributesMap(attributesMap);
 
         final PartServletResponse servletResponse = new PartServletResponse(multiplexer, response, boundary);
