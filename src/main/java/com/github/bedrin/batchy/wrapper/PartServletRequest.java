@@ -23,6 +23,8 @@ public class PartServletRequest extends HttpServletRequestWrapper {
     private final static String INCLUDE_QUERY_STRING = "javax.servlet.include.query_string";
     private final static String INCLUDE_REQUEST_URI = "javax.servlet.include.request_uri";
     private final static String INCLUDE_SERVLET_PATH = "javax.servlet.include.servlet_path";
+    public static final String CONTENT_LENGTH = "Content-Length";
+    public static final String CONTENT_TYPE = "Content-Type";
 
     public PartServletRequest(HttpServletRequest request) {
         super(request);
@@ -238,12 +240,16 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     @Override
     public int getContentLength() {
-        return super.getContentLength(); // todo implement
+        try {
+            return getIntHeader(CONTENT_LENGTH);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
     }
 
     @Override
     public String getContentType() {
-        return super.getContentType(); // todo implement
+        return getHeader(CONTENT_TYPE);
     }
 
     // cookies

@@ -1,5 +1,6 @@
 package com.github.bedrin.batchy.io;
 
+import com.github.bedrin.batchy.util.IoUtils;
 import com.github.bedrin.batchy.util.MultiHashMap;
 
 import javax.servlet.ServletException;
@@ -7,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.util.Arrays;
+
+import static com.github.bedrin.batchy.util.IoUtils.drainInputStream;
 
 public class MultipartParser {
 
@@ -74,11 +77,6 @@ public class MultipartParser {
             pis.unread(a);
         }
         return false;
-    }
-
-    private void drainInputStream(InputStream is) throws IOException {
-        byte[] buffer = new byte[8192];
-        while (is.read(buffer) != -1);
     }
 
 }
