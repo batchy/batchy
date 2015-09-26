@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
+import java.util.Arrays;
 
 public class MultipartParser {
 
@@ -21,27 +22,37 @@ public class MultipartParser {
 
         HeaderParser headerParser = new HeaderParser(false);
 
-        PushbackInputStream pis = new PushbackInputStream(inputStream, 2);
+        PushbackInputStream pis = new PushbackInputStream(inputStream, boundary.length());
 
         // preface
-        {
-            pis.unread('\n'); // todo workaround for no preface
-            drainInputStream(new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE));
+        byte[] buff = new byte[boundary.length()];
+        int bytesRead = 0;
+        for (int i = 0; i != -1 && bytesRead < boundary.length();
+             bytesRead += (i = pis.read(buff, bytesRead, boundary.length() - bytesRead)));
+
+        if (bytesRead == boundary.length()) {
+
+            if (!Arrays.equals(buff, boundary.getBytes())) {
+                // preface; push back the first bytes and drain input stream till boundary met
+                pis.unread(buff);
+                drainInputStream(new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE));
+            }
+
+            // parts
+            do {
+                if (wasLastPart(pis)) break;
+                BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
+                MultiHashMap<String, String> messageHeaders = headerParser.parseHeader(bis);
+                String requestLine = headerParser.readFirstNotEmptyLine(bis);
+                MultiHashMap<String, String> httpHeaders = headerParser.parseHeader(bis);
+                httpRequestProcessor.processHttpRequest(messageHeaders, requestLine, httpHeaders, bis);
+
+            } while (true);
+
+            // epilogue
+            drainInputStream(pis); // todo do we really need to drain it?
+
         }
-
-        // parts
-        do {
-            if (wasLastPart(pis)) break;
-            BoundedInputStream bis = new BoundedInputStream(pis, boundary.getBytes(), BoundedInputStream.Prefix.NEW_LINE);
-            MultiHashMap<String, String> messageHeaders = headerParser.parseHeader(bis);
-            String requestLine = headerParser.readFirstNotEmptyLine(bis);
-            MultiHashMap<String, String> httpHeaders = headerParser.parseHeader(bis);
-            httpRequestProcessor.processHttpRequest(messageHeaders, requestLine, httpHeaders, bis);
-
-        } while (true);
-
-        // epilogue
-        drainInputStream(pis); // todo do we really need to drain it?
 
     }
 

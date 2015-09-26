@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Enumeration;
+import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -27,6 +30,8 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
 
     private final AsyncMultiplexer multiplexer;
 
+    private final Map<String, Object> attributesMap = new ConcurrentHashMap<String, Object>();
+
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public AsyncDemultiplexer(HttpServletRequest request, HttpServletResponse response, String boundary) {
@@ -34,6 +39,16 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
         this.response = response;
         this.boundary = boundary;
         this.multiplexer = new AsyncMultiplexer(request, response, boundary);
+
+        final Enumeration attributeNames = request.getAttributeNames();
+        while (attributeNames.hasMoreElements()) {
+            Object attributeNameObj = attributeNames.nextElement();
+            if (null != attributeNameObj && attributeNameObj instanceof String) {
+                final String attributeName = (String) attributeNameObj;
+                attributesMap.put(attributeName, request.getAttribute(attributeName));
+            }
+        }
+
     }
 
     @Override
@@ -84,6 +99,7 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
         servletRequest.setInputStream(pis);
         servletRequest.setParameters(params);
         servletRequest.setHeaders(httpHeaders); // todo headers must be filtered and merged
+        servletRequest.setAttributesMap(attributesMap);
 
         final PartServletResponse servletResponse = new PartServletResponse(multiplexer, response, boundary);
 
@@ -186,6 +202,8 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
         }
 
         response.getOutputStream().write(("\r\n--" + boundary + "--").getBytes());
+
+        // todo write attributes back to original request
 
     }
 

@@ -216,7 +216,29 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     // attributes
 
-    // todo implement attributes
-    // todo implement communication via attributes?
+    private Map<String, Object> attributesMap;
 
+    public void setAttributesMap(Map<String, Object> attributesMap) {
+        this.attributesMap = attributesMap;
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        return attributesMap.get(name);
+    }
+
+    @Override
+    public Enumeration getAttributeNames() {
+        return new IteratorEnumeration<String>(attributesMap.keySet());
+    }
+
+    @Override
+    public void setAttribute(String name, Object o) {
+        attributesMap.put(name, o);
+    }
+
+    @Override
+    public void removeAttribute(String name) {
+        attributesMap.remove(name);
+    }
 }

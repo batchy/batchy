@@ -17,14 +17,14 @@ public class BatchyServlet extends HttpServlet {
         String method = request.getMethod();
 
         if (!"POST".equalsIgnoreCase(method) && !"PUT".equalsIgnoreCase(method)) {
-            response.sendError(405);
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
 
         String contentType = request.getContentType();
 
         if (null == contentType || !contentType.startsWith("multipart/mixed; boundary=")) {
-            response.sendError(415);
+            response.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE);
             return;
         }
 
