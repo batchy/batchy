@@ -1,15 +1,19 @@
 package com.github.bedrin.batchy.wrapper;
 
 import com.github.bedrin.batchy.util.DateUtils;
+import com.github.bedrin.batchy.util.IoUtils;
 import com.github.bedrin.batchy.util.IteratorEnumeration;
 import com.github.bedrin.batchy.util.MultiHashMap;
 
 import javax.servlet.ServletInputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
 import java.util.Enumeration;
 import java.util.Map;
+
+import static com.github.bedrin.batchy.util.IoUtils.UTF8;
 
 // todo implement rest of the methods
 public class PartServletRequest extends HttpServletRequestWrapper {
@@ -51,9 +55,18 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     private InputStream inputStream;
 
+    private BufferedReader servletReader;
+    private ServletInputStream servletInputStream;
+
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        return new ServletPartInputStream(inputStream);
+        if (null == servletInputStream) {
+            if (null != servletReader) {
+                throw new IllegalStateException("Cannot call getInputStream() after getReader()");
+            }
+            servletInputStream = new ServletPartInputStream(inputStream);
+        }
+        return servletInputStream;
     }
 
     public void setInputStream(InputStream inputStream) {
@@ -62,7 +75,15 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     @Override
     public BufferedReader getReader() throws IOException {
-        return new BufferedReader(new InputStreamReader(getInputStream())); // todo consider encoding
+        if (null == servletReader) {
+            if (null != servletInputStream) {
+                throw new IllegalStateException("Cannot call getReader() after getInputStream()");
+            }
+            servletReader = new BufferedReader(
+                    new InputStreamReader(inputStream, null == characterEncoding ? UTF8 : getCharacterEncoding())
+            );
+        }
+        return servletReader;
     }
 
     private static class ServletPartInputStream extends ServletInputStream {
@@ -117,9 +138,11 @@ public class PartServletRequest extends HttpServletRequestWrapper {
         return (String) getRequest().getAttribute(INCLUDE_SERVLET_PATH);
     }
 
+
+
     // Parameters
 
-    // todo implement multipar/form-data parameters
+    // todo implement multipart/form-data parameters
 
     private MultiHashMap<String,String> parameters;
 
@@ -190,14 +213,27 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     // parsed headers
 
+    private String characterEncoding;
+
     @Override
     public String getCharacterEncoding() {
-        return super.getCharacterEncoding(); // todo implement
+        return null == characterEncoding ? parseCharacterEncoding(getContentType()) : characterEncoding;
+    }
+
+    public static String parseCharacterEncoding(String contentType) {
+        if (null != contentType) {
+            int charsetIx = contentType.indexOf("charset=");
+            if (charsetIx != -1) {
+                int semicolonIx = contentType.indexOf(';', charsetIx);
+                return contentType.substring(charsetIx + "charsest=".length() - 1, -1 == semicolonIx ? contentType.length() : semicolonIx);
+            }
+        }
+        return null;
     }
 
     @Override
     public void setCharacterEncoding(String enc) throws UnsupportedEncodingException {
-        super.setCharacterEncoding(enc); // todo implement
+        this.characterEncoding = enc;
     }
 
     @Override

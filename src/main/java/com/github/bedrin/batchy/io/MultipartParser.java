@@ -77,7 +77,8 @@ public class MultipartParser {
     }
 
     private void drainInputStream(InputStream is) throws IOException {
-        while (is.read() != -1);
+        byte[] buffer = new byte[8192];
+        while (is.read(buffer) != -1);
     }
 
 }
