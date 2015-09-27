@@ -270,10 +270,10 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public void setCharacterEncoding(String charset) {
-        if (isCommitted()) {
-            throw new IllegalStateException("Response is already committed");
+        if (!isCommitted()) {
+            this.characterEncoding = charset;
         }
-        this.characterEncoding = charset;
+
     }
 
     @Override
@@ -284,12 +284,16 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public void setContentLength(int len) {
-        super.setContentLength(len);
+        if (!isCommitted()) {
+            addIntHeader("Content-Length", len);
+        }
     }
 
     @Override
     public void setContentType(String type) {
-        setHeader("Content-Type", type);
+        if (!isCommitted()) {
+            setHeader("Content-Type", type);
+        }
     }
 
     @Override
@@ -299,7 +303,9 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public void setLocale(Locale loc) {
-        super.setLocale(loc);
+        if (!isCommitted()) {
+            super.setLocale(loc);
+        }
     }
 
     @Override

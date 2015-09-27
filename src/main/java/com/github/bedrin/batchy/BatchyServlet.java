@@ -1,13 +1,13 @@
 package com.github.bedrin.batchy;
 
 import com.github.bedrin.batchy.mux.AsyncDemultiplexer;
-import com.github.bedrin.batchy.util.IoUtils;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
 import java.io.IOException;
 
 public class BatchyServlet extends HttpServlet {
@@ -34,7 +34,13 @@ public class BatchyServlet extends HttpServlet {
             // todo optionally send HTTP 100 status code
         }
 
-        String boundary = IoUtils.extractSemicolonSeparatedAttribute(contentType, "boundary");
+        String boundary;
+        try {
+            boundary = new MimeType(contentType).getParameter("boundary");
+        } catch (MimeTypeParseException e) {
+            throw new ServletException("Cannot extract boundary from request");
+            // todo think of proper error handling
+        }
 
         AsyncDemultiplexer demultiplexer = new AsyncDemultiplexer(request, response, boundary);
         demultiplexer.service();

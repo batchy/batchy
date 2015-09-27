@@ -1,12 +1,12 @@
 package com.github.bedrin.batchy.wrapper;
 
 import com.github.bedrin.batchy.util.DateUtils;
-import com.github.bedrin.batchy.util.IoUtils;
 import com.github.bedrin.batchy.util.IteratorEnumeration;
 import com.github.bedrin.batchy.util.MultiHashMap;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
@@ -14,6 +14,7 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import static com.github.bedrin.batchy.util.IoUtils.UTF8;
+import static java.lang.String.format;
 
 // todo implement rest of the methods
 public class PartServletRequest extends HttpServletRequestWrapper {
@@ -81,9 +82,13 @@ public class PartServletRequest extends HttpServletRequestWrapper {
             if (null != servletInputStream) {
                 throw new IllegalStateException("Cannot call getReader() after getInputStream()");
             }
-            servletReader = new BufferedReader(
-                    new InputStreamReader(inputStream, null == characterEncoding ? UTF8 : getCharacterEncoding())
-            );
+            try {
+                servletReader = new BufferedReader(new InputStreamReader(
+                        inputStream, null == getOrParseCharacterEncodingImpl() ? UTF8 : characterEncoding
+                ));
+            } catch (MimeTypeParseException e) {
+                throw new UnsupportedEncodingException(format("Couldn't parse encoding from mime type: %s", e.getMessage()));
+            }
         }
         return servletReader;
     }
@@ -217,16 +222,28 @@ public class PartServletRequest extends HttpServletRequestWrapper {
 
     @Override
     public String getCharacterEncoding() {
-        return null == characterEncoding ? parseCharacterEncoding(getContentType()) : characterEncoding;
+        try {
+            return getOrParseCharacterEncodingImpl();
+        } catch (MimeTypeParseException e) {
+            return null;
+        }
     }
 
-    public static String parseCharacterEncoding(String contentType) {
-        return IoUtils.extractSemicolonSeparatedAttribute(contentType, "charset");
+    private String getOrParseCharacterEncodingImpl() throws MimeTypeParseException {
+        if (null == characterEncoding) {
+            characterEncoding = parseCharacterEncoding(getContentType());
+        }
+        return characterEncoding;
+    }
+
+    public static String parseCharacterEncoding(String contentType) throws MimeTypeParseException {
+        return contentType == null ? null : new MimeType(contentType).getParameter("charset");
     }
 
     @Override
     public void setCharacterEncoding(String enc) throws UnsupportedEncodingException {
         this.characterEncoding = enc;
+        // todo validate that charset is valid
     }
 
     @Override

@@ -20,6 +20,14 @@ public class PartServletRequestTest {
         assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data;charset=UTF-8;boundary=foo"));
         assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data;boundary=foo;charset=UTF-8;"));
         assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data;boundary=foo;charset=UTF-8"));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data; charset=\"UTF-8\"; boundary=foo"));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data; charset=\"UTF-8\";"));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data; charset=\"UTF-8\""));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data; boundary=foo; charset=\"UTF-8\";"));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data; boundary=foo; charset=\"UTF-8\""));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data;charset=\"UTF-8\";boundary=foo"));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data;boundary=foo;charset=\"UTF-8\";"));
+        assertEquals("UTF-8", parseCharacterEncoding("multipart/form-data;boundary=foo;charset=\"UTF-8\""));
     }
 
 }
