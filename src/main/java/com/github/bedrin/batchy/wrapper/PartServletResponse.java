@@ -3,6 +3,7 @@ package com.github.bedrin.batchy.wrapper;
 import com.github.bedrin.batchy.io.LazyOutputStream;
 import com.github.bedrin.batchy.mux.AsyncMultiplexer;
 import com.github.bedrin.batchy.util.DateUtils;
+import com.github.bedrin.batchy.util.IoUtils;
 import com.github.bedrin.batchy.util.MultiHashMap;
 
 import javax.servlet.ServletOutputStream;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.*;
+
+import static com.github.bedrin.batchy.util.IoUtils.ISO_8859_1_ENCODING;
 
 // todo implement rest of the methods
 public class PartServletResponse extends HttpServletResponseWrapper implements LazyOutputStream.OutputStreamSupplier {
@@ -215,44 +218,68 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public void setDateHeader(String name, long date) {
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
         headers.put(name, Arrays.asList(DateUtils.formatDate(new Date(date))));
     }
 
     @Override
     public void addDateHeader(String name, long date) {
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
         headers.add(name, DateUtils.formatDate(new Date(date)));
     }
 
     @Override
     public void setHeader(String name, String value) {
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
         headers.put(name, Arrays.asList(value));
     }
 
     @Override
     public void addHeader(String name, String value) {
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
         headers.add(name, value);
     }
 
     @Override
     public void setIntHeader(String name, int value) {
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
         headers.put(name, Arrays.asList(Integer.toString(value)));
     }
 
     @Override
     public void addIntHeader(String name, int value) {
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
         headers.add(name, Integer.toString(value));
     }
 
     // todo implement headers (and charset) related methods
 
+    private String characterEncoding;
+
     @Override
     public void setCharacterEncoding(String charset) {
-        super.setCharacterEncoding(charset);
+        if (isCommitted()) {
+            throw new IllegalStateException("Response is already committed");
+        }
+        this.characterEncoding = charset;
     }
 
     @Override
     public String getCharacterEncoding() {
-        return super.getCharacterEncoding();
+        // todo if not specified, guess from content-type or locale
+        return null == characterEncoding ? ISO_8859_1_ENCODING : characterEncoding;
     }
 
     @Override
