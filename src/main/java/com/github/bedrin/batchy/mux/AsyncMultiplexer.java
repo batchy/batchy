@@ -29,6 +29,16 @@ public class AsyncMultiplexer {
     private Lock partsLock = new ReentrantLock();
     private Condition allPartsProcessed = partsLock.newCondition();
     private int activeRequests;
+    private int finishedRequests;
+
+    public int getFinishedRequests() {
+        partsLock.lock();
+        try {
+            return finishedRequests;
+        } finally {
+            partsLock.unlock();
+        }
+    }
 
     public void addActiveRequest() {
         partsLock.lock();
@@ -42,6 +52,7 @@ public class AsyncMultiplexer {
     public void finishActiveRequest() {
         partsLock.lock();
         try {
+            finishedRequests++;
             if (0 == --activeRequests) {
                 allPartsProcessed.signalAll();
             }

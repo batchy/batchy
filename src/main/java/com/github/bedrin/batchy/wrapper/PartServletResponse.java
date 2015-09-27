@@ -61,12 +61,17 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
     private void commitHeaders(ServletOutputStream sos) {
         PrintWriter pw = new PrintWriter(sos);
 
-        pw.append("\r\n--").append(boundary).append("\r\n").append("Content-Type: application/http\r\n\r\n");
+        if (multiplexer.getFinishedRequests() > 0) {
+            pw.append("\r\n");
+        }
+
+        pw.append("--").append(boundary).append("\r\n").append("Content-Type: application/http; msgtype=response\r\n\r\n");
 
         pw.
                 append("HTTP/1.1"). // todo take protocol version from request
                 append(" ").
-                append(Integer.toString(statusCode));
+                append(Integer.toString(statusCode)).
+                append(" ");
 
         if (null != statusMessage) {
             pw.append(" ").append(statusMessage);
@@ -257,7 +262,7 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
 
     @Override
     public void setContentType(String type) {
-        super.setContentType(type);
+        setHeader("Content-Type", type);
     }
 
     @Override

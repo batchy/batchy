@@ -204,6 +204,8 @@ public class AsyncDemultiplexer implements HttpRequestProcessor {
 
     public void service() throws IOException, ServletException {
 
+        response.setContentType("multipart/mixed; boundary=\"" + boundary + "\"");
+
         MultipartParser multipartParser = new MultipartParser(boundary, this);
         multipartParser.parseMultipartRequest(request.getInputStream());
 
