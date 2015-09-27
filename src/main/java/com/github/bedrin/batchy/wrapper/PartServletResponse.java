@@ -77,7 +77,7 @@ public class PartServletResponse extends HttpServletResponseWrapper implements L
                 append(" ");
 
         if (null != statusMessage) {
-            pw.append(" ").append(statusMessage);
+            pw.append(statusMessage);
         }
 
         pw.append("\r\n");
